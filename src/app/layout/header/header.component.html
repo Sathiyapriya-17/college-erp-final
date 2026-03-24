@@ -1,0 +1,55 @@
+<div
+  class="layout-topbar surface-card flex align-items-center justify-content-between px-4 py-2 shadow-1 h-3rem border-bottom-1 surface-border">
+  <!-- Search Bar -->
+  <div class="topbar-left flex align-items-center">
+    <span class="p-input-icon-left w-20rem">
+      <i class="pi pi-search"></i>
+      <input type="text" pInputText placeholder="Search students, staff, or IDs..." class="w-full p-inputtext-sm" />
+    </span>
+  </div>
+
+  <!-- Actions -->
+  <div class="topbar-right flex align-items-center gap-3">
+
+    <i class="pi pi-bell text-xl text-500 cursor-pointer p-overlay-badge" (click)="navigateToNotifications()"
+      pTooltip="Notifications">
+      <p-badge *ngIf="unreadCount > 0" [value]="unreadCount.toString()" severity="danger"></p-badge>
+    </i>
+
+    <i class="pi text-xl text-500 cursor-pointer" [ngClass]="isDarkTheme ? 'pi-sun' : 'pi-moon'" (click)="toggleTheme()"
+      pTooltip="Toggle Theme"></i>
+
+    <i class="pi pi-sign-out text-xl text-red-500 cursor-pointer" (click)="logout()" pTooltip="Logout"></i>
+
+    <div class="user-profile flex align-items-center gap-2 cursor-pointer" (click)="menu.toggle($event)">
+      <div class="text-right hidden md:block">
+        <span class="block font-bold text-sm text-900">{{ user.name }}</span>
+        <span class="block text-xs text-500">{{ user.role }} User</span>
+      </div>
+      <p-avatar *ngIf="!user.profile_picture" [label]="user.name.substring(0,2).toUpperCase()" shape="circle"
+        size="normal" styleClass="bg-primary text-white"></p-avatar>
+      <p-avatar *ngIf="user.profile_picture" [image]="user.profile_picture" shape="circle" size="normal"></p-avatar>
+    </div>
+    <p-menu #menu [model]="userMenuItems" [popup]="true" appendTo="body"></p-menu>
+  </div>
+</div>
+
+<p-dialog [(visible)]="displayPrefs" header="My Preferences" [modal]="true" [style]="{width: '400px'}">
+  <div class="flex flex-column gap-4 py-3">
+    <div class="field mb-0">
+      <label class="block font-medium mb-2">Theme</label>
+      <p-dropdown [options]="themes" [(ngModel)]="selectedTheme" optionLabel="label" optionValue="value" class="w-full"
+        styleClass="w-full"></p-dropdown>
+    </div>
+
+    <div class="field mb-0">
+      <label class="block font-medium mb-2">Profile Picture (Max 2MB)</label>
+      <input type="file" accept="image/*" (change)="onFileSelect($event)" class="w-full p-inputtext p-2" />
+      <small class="text-500 block mt-1" *ngIf="selectedFile">Selected: {{ selectedFile.name }}</small>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="displayPrefs = false"></button>
+    <button pButton label="Save" icon="pi pi-check" [loading]="savingPrefs" (click)="savePreferences()"></button>
+  </ng-template>
+</p-dialog>

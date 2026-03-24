@@ -1,0 +1,264 @@
+<div class="p-4 overflow-y-auto" style="height: calc(100vh - 4rem);">
+  <!-- Common Header -->
+  <div class="flex justify-content-between align-items-center mb-4">
+    <h1 class="text-3xl font-bold m-0 text-900">{{ user.role }} Dashboard</h1>
+    <span class="text-500 font-medium">{{ user.name }} | {{ user.role === 'Student' ? studentData?.profile?.id :
+      user.role }}</span>
+  </div>
+
+  <!-- 🎓 STUDENT DASHBOARD -->
+  <div *ngIf="user.role === 'Student'" class="grid">
+    <!-- Profile & Stats Top Row -->
+    <div class="col-12 lg:col-4">
+      <div class="surface-card shadow-2 p-4 border-round h-full">
+        <div class="flex align-items-center mb-4 gap-3">
+          <p-avatar icon="pi pi-user" size="xlarge" shape="circle" styleClass="surface-100 text-blue-500"></p-avatar>
+          <div>
+            <div class="text-900 font-bold text-xl">{{ user.name }}</div>
+            <div class="text-500 text-sm">{{ studentData?.profile?.id }} | Sem {{ studentData?.profile?.semester }}
+            </div>
+            <div class="text-primary font-medium text-xs mt-1">{{ studentData?.profile?.course }}</div>
+          </div>
+        </div>
+        <div class="border-top-1 surface-border pt-3 mt-3">
+          <div class="flex justify-content-between mb-2">
+            <span class="text-600">GPA / CGPA</span>
+            <span class="text-900 font-bold">{{ studentData?.performance?.gpa }} / {{ studentData?.performance?.cgpa
+              }}</span>
+          </div>
+          <div class="flex justify-content-between">
+            <span class="text-600">Recent Result</span>
+            <span class="text-green-500 font-bold">{{ studentData?.performance?.recentResult }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Attendance Overview Card -->
+    <div class="col-12 md:col-6 lg:col-4">
+      <div class="surface-card shadow-2 p-4 border-round h-full">
+        <div class="flex justify-content-between align-items-start mb-3">
+          <span class="text-900 font-bold text-lg">Attendance Overview</span>
+          <span class="text-blue-500 font-bold text-2xl">{{ studentData?.attendance?.overall }}%</span>
+        </div>
+        <div class="flex flex-column gap-3 mt-4">
+          <div *ngFor="let sub of studentData?.attendance?.subjects">
+            <div class="flex justify-content-between mb-1">
+              <span class="text-sm font-medium">{{ sub.name }}</span>
+              <span class="text-xs" [class.text-red-500]="sub.alert">{{ sub.pct }}%</span>
+            </div>
+            <div class="w-full surface-200 border-round" style="height: 6px;">
+              <div [class]="sub.alert ? 'bg-red-500' : 'bg-blue-500'" class="h-full border-round"
+                [style.width.%]="sub.pct"></div>
+            </div>
+            <span *ngIf="sub.alert" class="text-red-500 text-xs mt-1 block"><i
+                class="pi pi-exclamation-circle text-xs"></i> Critical Alert</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fee Status Card -->
+    <div class="col-12 md:col-6 lg:col-4">
+      <div class="surface-card shadow-2 p-4 border-round h-full flex flex-column">
+        <span class="text-900 font-bold text-lg mb-4">Fee Status</span>
+        <div class="flex flex-column gap-3 mb-4">
+          <div class="flex justify-content-between text-sm">
+            <span class="text-600">Total Fee</span>
+            <span class="text-900 font-bold">₹{{ studentData?.fees?.total }}</span>
+          </div>
+          <div class="flex justify-content-between text-sm">
+            <span class="text-600">Paid Amount</span>
+            <span class="text-green-600 font-bold">₹{{ studentData?.fees?.paid }}</span>
+          </div>
+          <div class="flex justify-content-between text-sm border-top-1 surface-border pt-2 mt-2">
+            <span class="text-900 font-bold">Due Balance</span>
+            <span class="text-red-600 font-bold">₹{{ studentData?.fees?.due }}</span>
+          </div>
+        </div>
+        <div class="surface-100 p-3 border-round-lg mb-4 mt-auto" *ngIf="studentData?.fees?.status === 'Pending'">
+          <div class="flex align-items-center gap-2 text-red-500 font-bold mb-1">
+            <i class="pi pi-bell"></i>
+            <span>Payment Pending</span>
+          </div>
+          <p class="text-xs text-500 m-0">Due by {{ studentData?.fees?.dueDate }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Middle Row: Timetable Table -->
+    <div class="col-12 lg:col-8">
+      <div class="surface-card shadow-2 p-4 border-round mb-4">
+        <h5 class="m-0 mb-4 text-xl font-bold">Today's Timetable</h5>
+        <p-table [value]="studentData?.timetable || []" styleClass="p-datatable-sm"
+          [tableStyle]="{'min-width': '50rem'}">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Time</th>
+              <th>Subject</th>
+              <th>Faculty</th>
+              <th>Room</th>
+              <th>Status</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-cls>
+            <tr>
+              <td class="font-bold text-primary">{{ cls.time }}</td>
+              <td class="font-bold text-900">{{ cls.subject }}</td>
+              <td class="text-600">Prof. {{ cls.faculty }}</td>
+              <td class="text-600">{{ cls.room }}</td>
+              <td>
+                <p-badge value="Live" severity="success"
+                  *ngIf="cls.time === '09:00 AM' || cls.time === '02:00 PM'"></p-badge>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="5" class="text-center p-4">No classes scheduled for today.</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+
+    <!-- Right Column: Analytics & Quick Links -->
+    <div class="col-12 lg:col-4">
+      <div class="surface-card shadow-2 p-4 border-round mb-4">
+        <h5 class="m-0 mb-4 text-xl font-bold">GPA Performance Trend</h5>
+        <p-chart type="line" [data]="chartData" [options]="chartOptions" height="200px"></p-chart>
+      </div>
+
+      <!-- Removed Quick Actions per user request -->
+    </div>
+  </div>
+
+  <!-- 👨🏫 FACULTY DASHBOARD -->
+  <div *ngIf="user.role === 'Faculty'" class="grid">
+    <!-- Summary Cards -->
+    <div class="col-12 md:col-6 lg:col-3">
+      <div class="surface-card shadow-2 p-4 border-round flex flex-column align-items-center text-center">
+        <p-avatar icon="pi pi-calendar" size="large" shape="circle"
+          styleClass="surface-100 text-purple-500 mb-3"></p-avatar>
+        <span class="text-500 font-medium mb-1">Workload</span>
+        <span class="text-900 font-bold text-2xl">{{ facultyData?.profile?.workload }} Hours / Week</span>
+      </div>
+    </div>
+    <div class="col-12 md:col-6 lg:col-3">
+      <div class="surface-card shadow-2 p-4 border-round flex flex-column align-items-center text-center">
+        <p-avatar icon="pi pi-calendar-times" size="large" shape="circle"
+          styleClass="surface-100 text-teal-500 mb-3"></p-avatar>
+        <span class="text-500 font-medium mb-1">My Attendance</span>
+        <span class="text-teal-500 font-bold text-2xl">{{ facultyData?.myAttendance }}</span>
+      </div>
+    </div>
+    <div class="col-12 md:col-6 lg:col-3">
+      <div class="surface-card shadow-2 p-4 border-round flex flex-column align-items-center text-center">
+        <p-avatar icon="pi pi-check-square" size="large" shape="circle"
+          styleClass="surface-100 text-orange-500 mb-3"></p-avatar>
+        <span class="text-500 font-medium mb-1">Attendance Pending</span>
+        <span class="text-orange-500 font-bold text-2xl">{{ facultyData?.attendancePending }} Classes</span>
+      </div>
+    </div>
+    <div class="col-12 md:col-6 lg:col-3">
+      <div class="surface-card shadow-2 p-4 border-round flex flex-column align-items-center text-center">
+        <p-avatar icon="pi pi-users" size="large" shape="circle" styleClass="surface-100 text-blue-500 mb-3"></p-avatar>
+        <span class="text-500 font-medium mb-1">Class Avg Perf</span>
+        <span class="text-900 font-bold text-2xl">{{ facultyData?.studentStats?.avgPerf }}%</span>
+      </div>
+    </div>
+    <div class="col-12 md:col-6 lg:col-3">
+      <div
+        class="surface-card shadow-2 p-4 border-round flex flex-column align-items-center text-center border-left-3 border-red-500">
+        <p-avatar icon="pi pi-exclamation-circle" size="large" shape="circle"
+          styleClass="surface-100 text-red-500 mb-3"></p-avatar>
+        <span class="text-500 font-medium mb-1">Critical Alerts</span>
+        <span class="text-red-500 font-bold text-2xl">2 Items</span>
+      </div>
+    </div>
+
+    <!-- Schedule -->
+    <div class="col-12">
+      <div class="surface-card shadow-2 p-4 border-round h-full">
+        <div class="flex justify-content-between align-items-center mb-4">
+          <h5 class="m-0 text-xl font-bold">Today's Interactive Schedule</h5>
+        </div>
+
+        <p-table [value]="facultyData?.schedule || []" styleClass="p-datatable-sm"
+          [tableStyle]="{'min-width': '50rem'}">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Time</th>
+              <th>Subject</th>
+              <th>Batch</th>
+              <th>Room</th>
+              <th>Status</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-cls>
+            <tr>
+              <td class="font-bold text-primary">{{ cls.time }}</td>
+              <td class="font-bold text-900">{{ cls.subject }}</td>
+              <td class="text-600 font-bold border-1 border-round px-2 py-1 surface-100 text-center w-max">{{ cls.batch
+                }}</td>
+              <td class="text-600">{{ cls.room }}</td>
+              <td>
+                <p-badge [value]="cls.status" [severity]="cls.status === 'Ongoing' ? 'danger' : 'info'"></p-badge>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="5" class="text-center p-4">No classes scheduled for today.</td>
+            </tr>
+          </ng-template>
+        </p-table>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 🏛 ADMIN DASHBOARD -->
+  <div *ngIf="user.role === 'Admin' || !user.role" class="grid">
+    <!-- Institution Summary -->
+    <div class="col-12 md:col-4" *ngFor="let stat of adminData?.stats">
+      <div class="surface-card shadow-2 p-3 border-round flex align-items-center">
+        <div class="surface-100 flex align-items-center justify-content-center border-round w-3rem h-3rem">
+          <i [class]="stat.icon + ' text-' + stat.color + '-500'" class="text-xl"></i>
+        </div>
+        <div class="ml-3">
+          <span class="text-500 font-medium block mb-1">{{ stat.label }}</span>
+          <span class="text-900 font-bold text-2xl">{{ stat.value }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="col-12 lg:col-8">
+      <div class="surface-card shadow-2 p-4 border-round">
+        <h5 class="m-0 mb-4 text-xl font-bold">Departmental Performance Comparison</h5>
+        <p-chart type="bar" [data]="chartData" [options]="chartOptions" height="300px"></p-chart>
+      </div>
+    </div>
+
+    <div class="col-12 lg:col-4">
+      <div class="surface-card shadow-2 p-4 border-round h-full">
+        <h5 class="m-0 mb-4 text-xl font-bold">System Activity Logs</h5>
+        <div class="flex flex-column gap-3">
+          <div *ngFor="let log of adminData?.recentLogs"
+            class="flex align-items-start gap-3 border-bottom-1 surface-border pb-3">
+            <p-avatar icon="pi pi-info-circle" styleClass="surface-100 text-blue-500"></p-avatar>
+            <div class="flex flex-column">
+              <span class="text-900 font-bold text-sm">{{ log.user }}</span>
+              <span class="text-600 text-xs">{{ log.action }}</span>
+              <span class="text-500 text-xs mt-1">{{ log.time }}</span>
+            </div>
+          </div>
+        </div>
+        <button pButton label="View System Audit" routerLink="/admin/system-audit"
+          class="p-button-text p-button-sm w-full mt-4"></button>
+      </div>
+    </div>
+  </div>
+
+</div>

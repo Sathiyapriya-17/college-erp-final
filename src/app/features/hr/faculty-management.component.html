@@ -1,0 +1,75 @@
+<div class="p-4">
+    <div class="flex justify-content-between align-items-center mb-4">
+        <h1 class="text-3xl font-bold m-0 text-900">Faculty Management</h1>
+        <button pButton label="Add Faculty" icon="pi pi-plus" (click)="showDialog()"></button>
+    </div>
+
+    <div class="surface-card shadow-2 border-round">
+        <p-table [value]="facultyList()" [paginator]="true" [rows]="10" responsiveLayout="scroll">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Faculty ID</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Designation</th>
+                    <th>Email</th>
+                    <th>Actions</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-f>
+                <tr>
+                    <td class="font-bold">{{f.faculty_id}}</td>
+                    <td>{{f.name}}</td>
+                    <td>{{f.department_name}}</td>
+                    <td>{{f.designation}}</td>
+                    <td>{{f.email}}</td>
+                    <td>
+                        <div class="flex gap-2">
+                            <button pButton icon="pi pi-pencil" class="p-button-text p-button-sm"
+                                (click)="editFaculty(f)"></button>
+                            <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm"
+                                (click)="deleteFaculty(f.id)"></button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+
+    <p-dialog [(visible)]="displayDialog" [header]="isEdit ? 'Edit Faculty' : 'Add Faculty'" [modal]="true"
+        [style]="{width: '450px'}">
+        <div class="flex flex-column gap-3 mt-2">
+            <div class="field">
+                <label for="name" class="block font-medium mb-1">Full Name</label>
+                <input pInputText id="name" [(ngModel)]="faculty.name" class="w-full" />
+            </div>
+            <div class="field">
+                <label for="fid" class="block font-medium mb-1">Faculty ID</label>
+                <input pInputText id="fid" [(ngModel)]="faculty.faculty_id" class="w-full" />
+            </div>
+            <div class="field">
+                <label for="email" class="block font-medium mb-1">Email</label>
+                <input pInputText id="email" [(ngModel)]="faculty.email" class="w-full" />
+            </div>
+            <div class="field">
+                <label for="phone" class="block font-medium mb-1">Phone</label>
+                <input pInputText id="phone" [(ngModel)]="faculty.phone" class="w-full" />
+            </div>
+            <div class="field">
+                <label for="dept" class="block font-medium mb-1">Department</label>
+                <p-dropdown id="dept" [options]="departments" [(ngModel)]="faculty.department"
+                    placeholder="Select Department" styleClass="w-full"></p-dropdown>
+            </div>
+            <div class="field">
+                <label for="desig" class="block font-medium mb-1">Designation</label>
+                <input pInputText id="desig" [(ngModel)]="faculty.designation" class="w-full" />
+            </div>
+        </div>
+        <ng-template pTemplate="footer">
+            <button pButton label="Cancel" icon="pi pi-times" class="p-button-text"
+                (click)="displayDialog = false"></button>
+            <button pButton label="Save" icon="pi pi-check" (click)="saveFaculty()"></button>
+        </ng-template>
+    </p-dialog>
+</div>
+<p-toast></p-toast>

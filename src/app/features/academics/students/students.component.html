@@ -1,0 +1,85 @@
+<p-toast></p-toast>
+
+<div class="surface-card shadow-2 border-round p-4">
+    <div class="flex justify-content-between align-items-center mb-4">
+        <h1 class="text-3xl font-bold m-0 text-900">Student Management</h1>
+        <p-button label="Add New Student" icon="pi pi-plus" (onClick)="showDialog()"></p-button>
+    </div>
+
+    <p-table [value]="students" [rows]="10" [paginator]="true" responsiveLayout="scroll" styleClass="p-datatable-sm">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Student ID</th>
+                <th>Department</th>
+                <th>GPA</th>
+                <th>Attendance</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-s>
+            <tr>
+                <td>{{s.name}}</td>
+                <td>{{s.student_id}}</td>
+                <td>{{s.department_name || s.department}}</td>
+                <td>{{s.gpa}}</td>
+                <td>{{s.attendance}}%</td>
+                <td>
+                    <p-tag [value]="s.status" [severity]="getSeverity(s.status)"></p-tag>
+                </td>
+                <td>
+                    <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm"
+                        (click)="editStudent(s)"></button>
+                    <button pButton icon="pi pi-trash"
+                        class="p-button-rounded p-button-text p-button-danger p-button-sm"
+                        (click)="deleteStudent(s)"></button>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="8" class="text-center p-4 text-500">No students found.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<p-dialog [(visible)]="displayDialog" [style]="{width: '450px'}" header="Student Details" [modal]="true"
+    class="p-fluid">
+    <ng-template pTemplate="content">
+        <div class="field mb-3">
+            <label for="name" class="block font-bold mb-2">Full Name</label>
+            <input type="text" pInputText id="name" [(ngModel)]="student.name" required autofocus />
+        </div>
+        <div class="field mb-3">
+            <label for="student_id" class="block font-bold mb-2">Student ID</label>
+            <input type="text" pInputText id="student_id" [(ngModel)]="student.student_id" required />
+        </div>
+        <div class="field mb-3">
+            <label for="department" class="block font-bold mb-2">Department</label>
+            <p-dropdown [options]="departments" [(ngModel)]="student.department" optionLabel="name" optionValue="id"
+                placeholder="Select Department"></p-dropdown>
+        </div>
+        <div class="formgrid grid">
+            <div class="field col mb-3">
+                <label for="gpa" class="block font-bold mb-2">GPA</label>
+                <input type="number" pInputText id="gpa" [(ngModel)]="student.gpa" step="0.1" min="0" max="10" />
+            </div>
+            <div class="field col mb-3">
+                <label for="attendance" class="block font-bold mb-2">Attendance %</label>
+                <input type="number" pInputText id="attendance" [(ngModel)]="student.attendance" min="0" max="100" />
+            </div>
+        </div>
+        <div class="field mb-3">
+            <label for="status" class="block font-bold mb-2">Academic Status</label>
+            <p-dropdown [options]="statusOptions" [(ngModel)]="student.status" placeholder="Select Status"></p-dropdown>
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <p-button label="Cancel" icon="pi pi-times" styleClass="p-button-text"
+            (onClick)="displayDialog = false"></p-button>
+        <p-button label="Save" icon="pi pi-check" (onClick)="saveStudent()"></p-button>
+    </ng-template>
+</p-dialog>

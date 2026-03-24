@@ -1,0 +1,184 @@
+<div class="grid">
+    <div class="col-12 flex align-items-center justify-content-between mb-4">
+        <h1 class="text-3xl font-bold m-0">Examination System</h1>
+        <div class="flex gap-2" *ngIf="userRole === 'Faculty' || userRole === 'Admin'">
+            <p-button label="Schedule New Exam" icon="pi pi-plus" (onClick)="showCreateExam()"></p-button>
+        </div>
+    </div>
+
+    <!-- Faculty & Admin View: Manage Exams -->
+    <div class="col-12" *ngIf="userRole === 'Faculty' || userRole === 'Admin'">
+        <div class="surface-card shadow-2 border-round p-4">
+            <p-table [value]="exams" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Exam Title</th>
+                        <th>Department</th>
+                        <th>Course</th>
+                        <th>Date</th>
+                        <th>Max Marks</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-exam>
+                    <tr>
+                        <td class="font-bold">{{exam.title}}</td>
+                        <td>{{exam.department_name}}</td>
+                        <td>{{exam.course_name}}</td>
+                        <td>{{exam.date}}</td>
+                        <td>{{exam.max_marks}}</td>
+                        <td>
+                            <p-tag [value]="'Scheduled'" severity="info"></p-tag>
+                        </td>
+                        <td>
+                            <div class="mb-2">
+                                <p-tag *ngIf="exam.google_form_link" value="Link Present" severity="success"></p-tag>
+                                <p-tag *ngIf="!exam.google_form_link" value="No Link" severity="warning"></p-tag>
+                            </div>
+                            <div class="flex gap-2 flex-wrap">
+                                <button pButton icon="pi pi-pencil" label="Edit" title="Edit Exam"
+                                    class="p-button-outlined p-button-warning p-button-sm"></button>
+                                <button pButton icon="pi pi-link" label="Link" title="Add Question Paper Link"
+                                    class="p-button-outlined p-button-info p-button-sm"
+                                    (click)="showLinkDialog(exam)"></button>
+                                <button pButton icon="pi pi-check-square" label="Marks" title="Enter Marks"
+                                    class="p-button-outlined p-button-success p-button-sm"
+                                    (click)="showMarksDialog(exam)"></button>
+                                <button pButton icon="pi pi-trash" label="Delete" title="Delete Exam"
+                                    class="p-button-outlined p-button-danger p-button-sm"
+                                    (click)="deleteExam(exam)"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+
+    <!-- Student View: Take Exams -->
+    <div class="col-12" *ngIf="userRole === 'Student'">
+        <div class="grid">
+            <div class="col-12 md:col-6 lg:col-4" *ngFor="let exam of exams">
+                <div class="surface-card shadow-2 p-4 border-round h-full flex flex-column">
+                    <div class="flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <span class="text-xl font-bold block mb-1">{{exam.title}}</span>
+                            <span class="text-500 text-sm">{{exam.course_name}}</span>
+                        </div>
+                        <p-tag *ngIf="!completedExamIds.includes(exam.id)" value="Active" severity="success"></p-tag>
+                        <p-tag *ngIf="completedExamIds.includes(exam.id)" value="Completed" severity="info"></p-tag>
+                    </div>
+                    <div class="flex align-items-center gap-2 mb-2 text-600">
+                        <i class="pi pi-calendar"></i>
+                        <span>{{exam.date}}</span>
+                    </div>
+                    <div class="flex align-items-center gap-2 mb-4 text-600">
+                        <i class="pi pi-clock"></i>
+                        <span>Max Marks: {{exam.max_marks}}</span>
+                    </div>
+                    <div class="mt-auto">
+                        <p-button *ngIf="!completedExamIds.includes(exam.id)" label="Start Writing Exam"
+                            icon="pi pi-file-edit" styleClass="w-full" (onClick)="takeExam(exam)"></p-button>
+                        <p-button *ngIf="completedExamIds.includes(exam.id)" label="Exam Submitted" icon="pi pi-check"
+                            styleClass="w-full" [disabled]="true"></p-button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12" *ngIf="exams.length === 0">
+                <div class="surface-card shadow-2 p-8 border-round text-center">
+                    <i class="pi pi-file-excel text-6xl text-400 mb-4"></i>
+                    <h2 class="text-2xl font-medium text-600">No active exams scheduled for you.</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p-dialog [(visible)]="displayExamDialog" [style]="{width: '450px'}" header="Exam Details" [modal]="true"
+    class="p-fluid">
+    <div class="field mb-3">
+        <label for="title" class="block font-bold mb-2">Exam Title</label>
+        <input type="text" pInputText id="title" [(ngModel)]="currentExam.title" placeholder="e.g. Midterm March 2024"
+            required />
+    </div>
+    <div class="field mb-3">
+        <label for="dept" class="block font-bold mb-2">Department</label>
+        <p-dropdown [options]="departments" [(ngModel)]="currentExam.department" (onChange)="onDeptChange()"
+            placeholder="Select Department" optionLabel="name" optionValue="id"></p-dropdown>
+    </div>
+    <div class="field mb-3">
+        <label for="course" class="block font-bold mb-2">Course</label>
+        <p-dropdown [options]="courses" [(ngModel)]="currentExam.course" placeholder="Select Course" optionLabel="name"
+            optionValue="id"></p-dropdown>
+    </div>
+    <div class="field mb-3">
+        <label for="faculty" class="block font-bold mb-2">Assigned Faculty</label>
+        <p-dropdown [options]="faculties" [(ngModel)]="currentExam.faculty" placeholder="Select Faculty"
+            optionLabel="name" optionValue="id"></p-dropdown>
+    </div>
+    <div class="formgrid grid">
+        <div class="field col mb-3">
+            <label for="date" class="block font-bold mb-2">Date</label>
+            <input type="date" pInputText id="date" [(ngModel)]="currentExam.date" required />
+        </div>
+        <div class="field col mb-3">
+            <label for="marks" class="block font-bold mb-2">Max Marks</label>
+            <input type="number" pInputText id="marks" [(ngModel)]="currentExam.max_marks" />
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button label="Cancel" icon="pi pi-times" (onClick)="displayExamDialog = false"
+            class="p-button-text"></p-button>
+        <p-button label="Schedule Exam" icon="pi pi-check" (onClick)="saveExam()"></p-button>
+    </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="displayLinkDialog" [style]="{width: '450px'}" header="Question Paper Link" [modal]="true"
+    class="p-fluid">
+    <div class="field mb-3" *ngIf="currentExamForLink">
+        <label for="link" class="block font-bold mb-2">Google Form Link</label>
+        <input type="url" pInputText id="link" [(ngModel)]="currentExamForLink.google_form_link"
+            placeholder="https://forms.google.com/..." required />
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button label="Cancel" icon="pi pi-times" (onClick)="displayLinkDialog = false"
+            class="p-button-text"></p-button>
+        <p-button label="Save Link" icon="pi pi-check" (onClick)="saveLink()"></p-button>
+    </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="displayMarksDialog" [style]="{width: '600px', 'max-height': '80vh'}" header="Enter Exam Marks"
+    [modal]="true" class="p-fluid">
+    <p-table [value]="examAttempts" responsiveLayout="scroll" *ngIf="currentExamForMarks">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Marks (Out of {{currentExamForMarks.max_marks}})</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-attempt>
+            <tr>
+                <td>{{attempt.student_id}}</td>
+                <td>{{attempt.student_name}}</td>
+                <td>
+                    <input type="number" pInputText [(ngModel)]="attempt.marks_obtained" class="w-full"
+                        style="max-width: 100px;" />
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="3" class="text-center">No students found to mark.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+    <ng-template pTemplate="footer">
+        <p-button label="Cancel" icon="pi pi-times" (onClick)="displayMarksDialog = false"
+            class="p-button-text"></p-button>
+        <p-button label="Save Marks" icon="pi pi-check" (onClick)="saveMarks()"></p-button>
+    </ng-template>
+</p-dialog>
+
+<p-toast></p-toast>

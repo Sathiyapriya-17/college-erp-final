@@ -1,0 +1,140 @@
+<div class="p-4 overflow-y-auto" style="height: calc(100vh - 4rem);">
+  <div class="flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="text-3xl font-bold m-0 text-900">Notices & Announcements</h1>
+      <p class="text-500 mt-1">Stay updated with the latest campus news</p>
+    </div>
+    <button *ngIf="canCreate" pButton label="Create Notice" icon="pi pi-plus" (click)="showCreateDialog()"
+      class="p-button-raised p-button-primary"></button>
+  </div>
+
+  <div class="grid mt-2">
+    <!-- Notice List -->
+    <div class="col-12" *ngIf="notices().length === 0">
+      <p-card class="text-center py-5">
+        <i class="pi pi-info-circle text-4xl text-500 mb-3"></i>
+        <p class="text-600 font-medium">No active notices found at this time.</p>
+      </p-card>
+    </div>
+
+    <div class="col-12 md:col-6 lg:col-4 xl:col-3" *ngFor="let notice of notices()">
+      <p-card class="notice-card shadow-2 h-full hover:shadow-4 transition-all transition-duration-300">
+        <ng-template pTemplate="header">
+          <div class="h-4 surface-ground border-round-top-xl" [class.bg-red-500]="notice.priority === 'IMPORTANT'"
+            [class.bg-blue-500]="notice.priority !== 'IMPORTANT'" style="height: 8px;"></div>
+        </ng-template>
+
+        <div class="flex justify-content-between align-items-start mb-2">
+          <p-badge [value]="notice.priority" [severity]="getPrioritySeverity(notice.priority)"></p-badge>
+          <span class="text-xs text-500">{{ notice.created_at | date:'mediumDate' }}</span>
+        </div>
+
+        <h3 class="text-900 font-bold m-0 mb-2 truncate-2" style="min-height: 3rem;">{{ notice.title }}</h3>
+        <p class="text-600 text-sm mb-4 line-height-3 truncate-3" style="min-height: 4.5rem;">{{ notice.description }}
+        </p>
+
+        <div class="border-top-1 surface-border pt-3 mt-auto">
+          <div class="flex justify-content-between align-items-center mb-2">
+            <span class="text-xs font-medium text-500">Target: <span class="text-primary">{{ notice.target_role
+                }}</span></span>
+            <span class="text-xs text-red-500 font-medium" *ngIf="notice.expiry_date">Expires: {{ notice.expiry_date |
+              date:'shortDate' }}</span>
+          </div>
+          <div class="flex justify-content-between align-items-center">
+            <span class="text-xs text-600">By {{ notice.created_by }} ({{ notice.created_by_role }})</span>
+            <div class="flex gap-2" *ngIf="canCreate">
+              <button pButton icon="pi pi-pencil" class="p-button-text p-button-sm p-button-rounded"
+                (click)="showEditDialog(notice)"></button>
+              <button *ngIf="userRole === 'Admin'" pButton icon="pi pi-trash"
+                class="p-button-text p-button-danger p-button-sm p-button-rounded"
+                (click)="deleteNotice(notice.id)"></button>
+              <button *ngIf="userRole === 'Admin'" pButton icon="pi pi-eye"
+                class="p-button-text p-button-info p-button-sm p-button-rounded"
+                (click)="viewAcknowledgments(notice)" title="View Acknowledgments"></button>
+            </div>
+            <div class="flex gap-2" *ngIf="userRole === 'Faculty'">
+              <button *ngIf="!isAcknowledged(notice.id)" pButton label="Acknowledge" class="p-button-sm p-button-success" (click)="acknowledge(notice)"></button>
+              <div *ngIf="isAcknowledged(notice.id)" class="text-green-500 font-bold text-sm flex align-items-center gap-1">
+                 <i class="pi pi-check-circle"></i> Acknowledged
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- Create/Edit Dialog -->
+  <p-dialog [(visible)]="displayDialog" [header]="isEdit ? 'Edit Notice' : 'Create New Notice'" [modal]="true"
+    [style]="{width: '450px'}" class="p-fluid">
+    <form [formGroup]="noticeForm" (ngSubmit)="saveNotice()">
+      <div class="field mb-4">
+        <label for="title" class="font-bold">Title</label>
+        <input id="title" type="text" pInputText formControlName="title" placeholder="Notice heading..." />
+        <small class="p-error block" *ngIf="noticeForm.get('title')?.invalid && noticeForm.get('title')?.touched">Title
+          is required.</small>
+      </div>
+
+      <div class="field mb-4">
+        <label for="description" class="font-bold">Description</label>
+        <textarea id="description" pInputTextarea formControlName="description" rows="5"
+          placeholder="Detailed announcement..."></textarea>
+        <small class="p-error block"
+          *ngIf="noticeForm.get('description')?.invalid && noticeForm.get('description')?.touched">Description is
+          required.</small>
+      </div>
+
+      <div class="grid">
+        <div class="col-6 field mb-4">
+          <label for="target_role" class="font-bold">Target Role</label>
+          <p-dropdown id="target_role" [options]="targetRoles" formControlName="target_role"
+            placeholder="Select Target"></p-dropdown>
+        </div>
+        <div class="col-6 field mb-4">
+          <label for="priority" class="font-bold">Priority</label>
+          <p-dropdown id="priority" [options]="priorities" formControlName="priority"
+            placeholder="Select Priority"></p-dropdown>
+        </div>
+      </div>
+
+      <div class="field mb-4">
+        <label for="expiry_date" class="font-bold">Expiry Date</label>
+        <p-calendar id="expiry_date" formControlName="expiry_date" [showIcon]="true" appendTo="body"></p-calendar>
+      </div>
+
+      <div class="field mb-4">
+        <label for="department" class="font-bold">Department (Optional)</label>
+        <input id="department" type="text" pInputText formControlName="department"
+          placeholder="e.g. Computer Science" />
+      </div>
+
+      <div class="flex justify-content-end gap-2 mt-4">
+        <button pButton type="button" label="Cancel" class="p-button-text" (click)="displayDialog = false"></button>
+        <button pButton type="submit" [label]="isEdit ? 'Update' : 'Publish'" [disabled]="noticeForm.invalid"></button>
+      </div>
+    </form>
+  </p-dialog>
+
+  <!-- Acknowledgments Dialog -->
+  <p-dialog [(visible)]="showAckDialog" header="Notice Acknowledgments" [modal]="true" [style]="{width: '500px'}">
+    <p-table [value]="acknowledgments" [scrollable]="true" scrollHeight="400px" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Faculty Name</th>
+          <th>Date</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-ack>
+        <tr>
+          <td>{{ ack.faculty_name }}</td>
+          <td>{{ ack.acknowledged_at | date:'medium' }}</td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="empty">
+        <tr>
+          <td colspan="2" class="text-center">No acknowledgments yet.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-dialog>
+</div>

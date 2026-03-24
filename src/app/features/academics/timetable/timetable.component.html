@@ -1,0 +1,136 @@
+<div class="p-4">
+
+  <!-- Header -->
+  <div class="flex align-items-center justify-content-between mb-4">
+    <h1 class="text-3xl font-bold m-0">Timetable</h1>
+    <div class="flex gap-2 align-items-center flex-wrap">
+      <p-dropdown [options]="departments" [(ngModel)]="selectedDept" (onChange)="loadTimetable()"
+        placeholder="Select Department" optionLabel="name" optionValue="id" class="p-inputtext-sm"
+        [style]="{'min-width': '220px'}" appendTo="body" styleClass="w-full">
+      </p-dropdown>
+      <p-dropdown [options]="semesters" [(ngModel)]="selectedSem" (onChange)="loadTimetable()"
+        placeholder="Select Semester" optionLabel="label" optionValue="value" class="p-inputtext-sm"
+        [style]="{'min-width': '160px'}" appendTo="body" styleClass="w-full">
+      </p-dropdown>
+      <!-- Dropdowns only, no add class button per user request -->
+    </div>
+  </div>
+
+  <!-- Prompt: select dept + sem first -->
+  <div *ngIf="!selectedDept || !selectedSem" class="surface-card shadow-2 border-round p-8 text-center">
+    <i class="pi pi-calendar-times text-6xl text-400 mb-3 block"></i>
+    <p class="text-600 text-xl">Please select a Department and Semester to view the timetable.</p>
+  </div>
+
+  <!-- Timetable Table -->
+  <div *ngIf="selectedDept && selectedSem" class="surface-card shadow-2 border-round overflow-x-auto">
+    <table style="width: 100%; border-collapse: collapse; min-width: 800px;">
+
+      <!-- Column headers -->
+      <thead>
+        <tr style="background: var(--surface-100, #f8f9fa);">
+          <th
+            style="width: 100px; padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--surface-border); color: var(--text-color-secondary); font-size: 0.85rem;">
+            Time</th>
+          <th *ngFor="let day of days"
+            style="padding: 12px 8px; text-align: center; border-bottom: 2px solid var(--surface-border); color: var(--text-color-secondary); font-size: 0.85rem;">
+            {{day}}
+          </th>
+        </tr>
+      </thead>
+
+      <!-- Time slot rows -->
+      <tbody>
+        <tr *ngFor="let slot of timeSlots; let r = index" style="border-bottom: 1px solid var(--surface-border);">
+
+          <!-- Time label -->
+          <td
+            class="p-2 md:p-3 text-sm font-semibold text-color-secondary white-space-nowrap align-middle surface-50 border-bottom-1 surface-border">
+            {{slot}}
+          </td>
+
+          <!-- Break Row -->
+          <td *ngIf="slot.includes('Break')" colspan="6"
+            style="padding: 12px; text-align: center; background: var(--surface-100, #f8f9fa); color: var(--text-color-secondary); font-weight: bold; font-size: 1rem; letter-spacing: 4px;">
+            BREAK
+          </td>
+
+          <!-- Day cells -->
+          <ng-container *ngIf="!slot.includes('Break')">
+            <td *ngFor="let dayCode of dayCodes; let c = index" class="p-2 border-bottom-1 surface-border align-top"
+              style="width: calc((100% - 100px) / 6);">
+
+              <!-- Cell with a scheduled class -->
+              <div *ngIf="grid[r][c]" class="relative surface-100 border-left-3 border-primary border-round p-2"
+                style="min-height: 70px;">
+                <div class="font-bold text-sm text-primary mb-1">
+                  {{grid[r][c].course_name || grid[r][c].subject || '—'}}
+                </div>
+                <div class="text-xs text-color-secondary">{{grid[r][c].faculty_name || '—'}}</div>
+                <div class="text-xs text-color-secondary mt-1">Room: {{grid[r][c].room || '—'}}</div>
+                <button *ngIf="isHod" pButton icon="pi pi-pencil"
+                  class="p-button-text p-button-secondary p-button-sm absolute top-0 right-0 p-1"
+                  style="width: 1.6rem; height: 1.6rem;" (click)="editClass(grid[r][c])">
+                </button>
+              </div>
+
+              <!-- Empty cell — HOD/admin sees + button -->
+              <div *ngIf="!grid[r][c] && isHod"
+                class="flex align-items-center justify-content-center surface-50 border-round cursor-pointer"
+                style="min-height: 70px; border: 1px dashed var(--surface-border);" (click)="showDialog(slot, days[c])">
+                <button pButton icon="pi pi-plus"
+                  class="p-button-text p-button-plain p-button-sm p-0 text-color-secondary"
+                  style="width: 1.8rem; height: 1.8rem;">
+                </button>
+              </div>
+
+              <!-- Empty cell — others see a subtle placeholder -->
+              <div *ngIf="!grid[r][c] && !isHod"
+                class="flex align-items-center justify-content-center surface-50 border-round"
+                style="min-height: 70px; border: 1px dashed var(--surface-border);">
+                <span class="text-300 text-xl">—</span>
+              </div>
+
+            </td>
+          </ng-container>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- Schedule Class Dialog (HOD/admin only) -->
+<p-dialog *ngIf="isHod" [(visible)]="displayDialog" [style]="{width: '480px'}" header="Schedule a Class" [modal]="true"
+  class="p-fluid">
+  <div class="field mb-3">
+    <label class="block font-bold mb-2">Subject / Course Name</label>
+    <p-dropdown [options]="coursesList" [(ngModel)]="newClass.course" optionLabel="name" optionValue="id" placeholder="Select a Course" styleClass="w-full" [style]="{'width':'100%'}" appendTo="body"></p-dropdown>
+  </div>
+  <div class="field mb-3">
+    <label class="block font-bold mb-2">Faculty Name</label>
+    <p-dropdown [options]="facultyList" [(ngModel)]="newClass.faculty" optionLabel="name" optionValue="id" placeholder="Select Faculty" styleClass="w-full" [style]="{'width':'100%'}" appendTo="body"></p-dropdown>
+  </div>
+  <div class="field mb-3">
+    <label class="block font-bold mb-2">Room Number</label>
+    <input type="text" pInputText [(ngModel)]="newClass.room" placeholder="e.g. 101" class="w-full" />
+  </div>
+  <div class="grid">
+    <div class="col-6 field mb-3">
+      <label class="block font-bold mb-2">Day</label>
+      <p-dropdown [options]="daysDropdown" [(ngModel)]="newClass.day" placeholder="Select Day" optionLabel="label"
+        optionValue="value" class="w-full" appendTo="body" styleClass="w-full"></p-dropdown>
+    </div>
+    <div class="col-6 field mb-3">
+      <label class="block font-bold mb-2">Time Slot</label>
+      <p-dropdown [options]="timeSlotsDropdown" [(ngModel)]="newClass.start_time" placeholder="Select Time"
+        optionLabel="label" optionValue="value" class="w-full" appendTo="body" styleClass="w-full"></p-dropdown>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancel" icon="pi pi-times" (onClick)="displayDialog = false" styleClass="p-button-text"></p-button>
+    <p-button label="Save Class" icon="pi pi-check" (onClick)="saveClass()"></p-button>
+  </ng-template>
+</p-dialog>
+
+<p-toast></p-toast>

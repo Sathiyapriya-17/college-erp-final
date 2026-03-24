@@ -1,0 +1,147 @@
+<div class="grid">
+    <div class="col-12 flex justify-content-between align-items-center mb-4">
+        <h1 class="text-3xl font-bold m-0" *ngIf="userRole === 'Student'">Student Admission Process</h1>
+        <h1 class="text-3xl font-bold m-0" *ngIf="userRole !== 'Student'">Admissions & Applications Panel</h1>
+    </div>
+
+    <!-- Student View: Application Form -->
+    <ng-container *ngIf="userRole === 'Student'">
+        <div class="col-12">
+            <p-steps [model]="items" [(activeIndex)]="activeIndex" [readonly]="false"></p-steps>
+        </div>
+
+        <div class="col-12 md:col-8 lg:col-6 mx-auto mt-4">
+            <div class="surface-card shadow-2 p-5 border-round">
+                <form [formGroup]="admissionForm">
+                    <!-- Step 1: Personal Info -->
+                    <div *ngIf="activeIndex === 0" class="flex flex-column gap-3">
+                        <h5 class="text-xl font-bold m-0 mb-3">Personal Information</h5>
+                        <div class="field">
+                            <label for="name" class="block font-bold mb-2">Full Name</label>
+                            <input pInputText id="name" formControlName="fullName" placeholder="Enter Full Name" />
+                        </div>
+                        <div class="field">
+                            <label for="email" class="block font-bold mb-2">Email Address</label>
+                            <input pInputText id="email" formControlName="email" placeholder="email@example.com" />
+                        </div>
+                        <div class="field">
+                            <label for="phone" class="block font-bold mb-2">Phone Number</label>
+                            <input pInputText id="phone" formControlName="phone" placeholder="+91 XXXXXXXXXX" />
+                        </div>
+                        <div class="field">
+                            <label for="dob" class="block font-bold mb-2">Date of Birth</label>
+                            <p-calendar id="dob" formControlName="dob" [showIcon]="true"
+                                placeholder="Select DOB"></p-calendar>
+                        </div>
+                        <div class="flex justify-content-end mt-4">
+                            <p-button label="Next" icon="pi pi-chevron-right" iconPos="right"
+                                (onClick)="nextStep()"></p-button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Academic Details -->
+                    <div *ngIf="activeIndex === 1" class="flex flex-column gap-3">
+                        <h5 class="text-xl font-bold m-0 mb-3">Academic Details</h5>
+                        <div class="field">
+                            <label for="dept" class="block font-bold mb-2">Desired Department</label>
+                            <p-dropdown id="dept" [options]="departments" formControlName="department"
+                                optionLabel="name" optionValue="id" placeholder="Select Department"
+                                class="w-full"></p-dropdown>
+                        </div>
+                        <div class="field">
+                            <label for="perc" class="block font-bold mb-2">Previous Percentage (%)</label>
+                            <input pInputText id="perc" formControlName="previousPercentage" placeholder="e.g. 85.5" />
+                        </div>
+                        <div class="field">
+                            <label for="admDate" class="block font-bold mb-2">Preferred Admission Date</label>
+                            <p-calendar id="admDate" formControlName="admissionDate" [showIcon]="true"
+                                class="w-full"></p-calendar>
+                        </div>
+                        <div class="flex justify-content-between mt-4">
+                            <p-button label="Previous" icon="pi pi-chevron-left" styleClass="p-button-text"
+                                (onClick)="prevStep()"></p-button>
+                            <p-button label="Next" icon="pi pi-chevron-right" iconPos="right"
+                                (onClick)="nextStep()"></p-button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Confirmation -->
+                    <div *ngIf="activeIndex === 2" class="flex flex-column gap-4">
+                        <h5 class="text-xl font-bold m-0">Confirm Admission Details</h5>
+                        <div class="grid p-2 border-round bg-gray-50">
+                            <div class="col-12 md:col-6">
+                                <span class="text-500 block">Name:</span>
+                                <span class="font-bold">{{admissionForm.value.fullName}}</span>
+                            </div>
+                            <div class="col-12 md:col-6">
+                                <span class="text-500 block">Email:</span>
+                                <span class="font-bold">{{admissionForm.value.email}}</span>
+                            </div>
+                            <div class="col-12 md:col-6">
+                                <span class="text-500 block">Department:</span>
+                                <span class="font-bold">{{admissionForm.value.department}}</span>
+                            </div>
+                            <div class="col-12 md:col-6">
+                                <span class="text-500 block">Status:</span>
+                                <p-tag [value]="admissionForm.value.status" severity="warning"></p-tag>
+                            </div>
+                        </div>
+                        <div class="flex justify-content-between mt-4">
+                            <p-button label="Previous" icon="pi pi-chevron-left" styleClass="p-button-text"
+                                (onClick)="prevStep()"></p-button>
+                            <p-button label="Submit Admission" icon="pi pi-check" severity="success"
+                                (onClick)="submitAdmission()"></p-button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </ng-container>
+
+    <!-- Faculty & Admin View: Data Table of Applicants -->
+    <ng-container *ngIf="userRole !== 'Student'">
+        <div class="col-12">
+            <div class="surface-card shadow-2 border-round p-4">
+                <p-table [value]="activeStudents" [paginator]="true" [rows]="10" responsiveLayout="scroll">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>Application ID</th>
+                            <th>Student Name</th>
+                            <th>Department</th>
+                            <th>Status</th>
+                            <th>GPA</th>
+                            <th>Action</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-student>
+                        <tr>
+                            <td class="font-bold text-primary">{{student.student_id}}</td>
+                            <td>{{student.name}}</td>
+                            <td>{{student.department_name}}</td>
+                            <td>
+                                <p-tag [value]="student.status"
+                                    [severity]="student.status === 'Active' ? 'success' : (student.status === 'Pending' ? 'warning' : 'danger')">
+                                </p-tag>
+                            </td>
+                            <td>{{student.gpa}}</td>
+                            <td>
+                                <button pButton icon="pi pi-eye" class="p-button-text p-button-sm p-button-info"
+                                    pTooltip="Review Application"></button>
+                                <button pButton icon="pi pi-check" class="p-button-text p-button-sm p-button-success"
+                                    pTooltip="Approve"
+                                    *ngIf="student.status === 'Pending' || student.status === 'Inactive'"></button>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="6" class="text-center p-4">No applications or students found.</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </div>
+    </ng-container>
+
+</div>
+<p-toast></p-toast>

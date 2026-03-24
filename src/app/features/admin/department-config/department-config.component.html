@@ -1,0 +1,91 @@
+<div class="grid">
+  <div class="col-12 flex align-items-center justify-content-between">
+    <h1 class="text-3xl font-bold m-0">Department Configuration</h1>
+    <p-button label="Add Department" icon="pi pi-plus" (onClick)="showDialog()"></p-button>
+  </div>
+
+  <div class="col-12">
+    <div class="surface-card shadow-2 border-round p-4">
+      <p-table [value]="departments" [paginator]="true" [rows]="10" responsiveLayout="scroll">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Department Name</th>
+            <th>Code</th>
+            <th>HOD</th>
+            <th>Established</th>
+            <th>Faculty Count</th>
+            <th>Student Count</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-dept>
+          <tr>
+            <td class="font-bold">{{dept.name}}</td>
+            <td><p-tag [value]="dept.code" severity="info"></p-tag></td>
+            <td>
+              <div class="flex align-items-center gap-2" *ngIf="dept.hod">
+                <p-avatar [label]="dept.hod.charAt(0)" shape="circle" size="normal"
+                  styleClass="bg-purple-500 text-white"></p-avatar>
+                <span>{{dept.hod}}</span>
+              </div>
+              <span *ngIf="!dept.hod" class="text-500 font-italic">Unassigned</span>
+            </td>
+            <td>{{dept.established}}</td>
+            <td>{{dept.facultyCount}}</td>
+            <td>{{dept.studentCount}}</td>
+            <td>
+              <p-tag [value]="dept.status" [severity]="dept.status === 'Active' ? 'success' : 'danger'"></p-tag>
+            </td>
+            <td>
+              <button pButton icon="pi pi-pencil" class="p-button-text p-button-warning p-button-sm"
+                (click)="editDepartment(dept)"></button>
+              <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm"
+                (click)="deleteDepartment(dept)"></button>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+
+<p-dialog header="Department Details" [(visible)]="displayDialog" [modal]="true" [style]="{width: '450px'}"
+  [draggable]="false" [resizable]="false">
+  <div class="flex flex-column gap-3 pt-3">
+    <div class="flex flex-column gap-2">
+      <label htmlFor="name" class="font-bold">Department Name</label>
+      <input pInputText id="name" [(ngModel)]="department.name" placeholder="e.g. Computer Science" />
+    </div>
+    <div class="flex flex-column gap-2">
+      <label htmlFor="code" class="font-bold">Department Code</label>
+      <input pInputText id="code" [(ngModel)]="department.code" placeholder="e.g. CS" />
+    </div>
+    <div class="flex flex-column gap-2">
+      <label htmlFor="hod" class="font-bold">Head of Department</label>
+      <p-dropdown [options]="facultyList" [(ngModel)]="department.hod" placeholder="Select HOD"
+        [filter]="true"></p-dropdown>
+    </div>
+    <div class="flex flex-column gap-2">
+      <label htmlFor="est" class="font-bold">Established Year</label>
+      <input pInputText id="est" [(ngModel)]="department.established" placeholder="e.g. 2005" />
+    </div>
+    <div class="flex align-items-center gap-2">
+      <label class="font-bold">Status:</label>
+      <div class="field-checkbox m-0">
+        <p-radioButton name="status" value="Active" [(ngModel)]="department.status" inputId="active"></p-radioButton>
+        <label for="active" class="ml-2">Active</label>
+      </div>
+      <div class="field-checkbox m-0 ml-3">
+        <p-radioButton name="status" value="Inactive" [(ngModel)]="department.status"
+          inputId="inactive"></p-radioButton>
+        <label for="inactive" class="ml-2">Inactive</label>
+      </div>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancel" icon="pi pi-times" (onClick)="displayDialog = false" styleClass="p-button-text"></p-button>
+    <p-button label="Save" icon="pi pi-check" (onClick)="saveDepartment()" autofocus></p-button>
+  </ng-template>
+</p-dialog>
+<p-toast></p-toast>

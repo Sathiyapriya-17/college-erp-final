@@ -1,0 +1,47 @@
+<div class="flex h-screen w-full align-items-center justify-content-center surface-ground">
+  <div class="surface-card p-4 shadow-2 border-round w-full lg:w-4">
+    <div class="text-center mb-5">
+      <div class="text-900 text-3xl font-medium mb-3">College ERP</div>
+      <span class="text-600 font-medium line-height-3">Welcome, please sign in to continue</span>
+    </div>
+
+    <div class="flex justify-content-center mb-4">
+      <p-selectButton [options]="roles" [(ngModel)]="selectedRole" optionLabel="label"
+        optionValue="value"></p-selectButton>
+    </div>
+
+    <div>
+      <label for="id" class="block text-900 font-medium mb-2">{{ getLabel() }}</label>
+      <input id="id" type="text" pInputText class="w-full mb-3" [(ngModel)]="userId"
+        [placeholder]="selectedRole === 'Student' ? 'e.g. STU2024001' : selectedRole === 'Faculty' ? 'Faculty ID / Username' : 'admin'" />
+
+      <label for="password" class="block text-900 font-medium mb-2">Password</label>
+      <input id="password" type="password" pInputText class="w-full mb-3" [(ngModel)]="password"
+        placeholder="Enter password" (keyup.enter)="login()" />
+
+      <div class="flex align-items-center justify-content-between mb-6">
+        <div class="flex align-items-center">
+          <p-checkbox id="rememberme" [(ngModel)]="rememberMe" [binary]="true" styleClass="mr-2"></p-checkbox>
+          <label for="rememberme">Remember me</label>
+        </div>
+        <a id="forgot-password-link" class="font-medium no-underline ml-2 text-blue-500 text-right cursor-pointer"
+          (click)="showForgotPassword()">Forgot password?</a>
+      </div>
+
+      <button pButton label="Sign In" icon="pi pi-user" class="w-full" (click)="login()"></button>
+    </div>
+
+    <div class="mt-4 text-center">
+      <span class="text-600">Don't have an account?
+        <a id="contact-admin-link" class="font-medium text-blue-500 cursor-pointer" (click)="showContactAdmin()">Contact
+          Admin</a>
+      </span>
+    </div>
+  </div>
+</div>
+
+<p-toast></p-toast>
+
+<!-- Dialogs (hidden until triggered) -->
+<app-forgot-password #forgotPwd></app-forgot-password>
+<app-contact-admin #contactAdmin></app-contact-admin>

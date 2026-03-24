@@ -1,0 +1,155 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>College ERP System - Project Documentation</title>
+<style>
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
+  h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+  h2 { color: #2980b9; margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+  h3 { color: #34495e; }
+  ul { margin-bottom: 20px; }
+  li { margin-bottom: 8px; }
+  hr { border: 0; border-top: 1px solid #ddd; margin: 40px 0; }
+  p { margin-bottom: 15px; }
+</style>
+</head>
+<body>
+
+<h1>College ERP System - Project Documentation</h1>
+
+<h2>1. Introduction</h2>
+<p>This document provides a comprehensive overview of the current state of the College ERP system. It outlines the modules, features, and technical components that have been completed across the backend APIs and frontend user interfaces.</p>
+<p>The system is built with a decoupled architecture utilizing <strong>Django REST Framework</strong> for the backend and <strong>Angular</strong> for the frontend client.</p>
+
+<hr>
+
+<h2>2. Backend Architecture & APIs (Django)</h2>
+<p>The backend provides a robust and secure set of RESTful APIs to manage the institution's data.</p>
+
+<h3>2.1. Authentication & Security</h3>
+<ul>
+  <li><strong>Student Login (<code>/api/student-login/</code>)</strong>: Secure authentication tailored for student accounts.</li>
+  <li><strong>Faculty/Admin Login (<code>/api/faculty-login/</code>)</strong>: Secure authentication for staff and administrators.</li>
+  <li><strong>Registration Requests</strong>: 
+    <ul>
+      <li><code>/api/registration-requests/</code>: Endpoint for new users to request access.</li>
+      <li><code>/api/registration-requests/&lt;id&gt;/action/</code>: Admin endpoints to approve or reject registration requests (automatically provisions accounts and sends credentials via email).</li>
+    </ul>
+  </li>
+  <li><strong>Password Management</strong>:
+    <ul>
+      <li><code>/api/forgot-password/</code>: Issue OTP for forgotten passwords.</li>
+      <li><code>/api/verify-otp/</code>: Verify the OTP sent to user email.</li>
+      <li><code>/api/reset-password/</code>: Securely reset user password.</li>
+    </ul>
+  </li>
+</ul>
+
+<h3>2.2. Core Academic Modules</h3>
+<ul>
+  <li><strong>Departments (<code>/api/departments/</code>)</strong>: CRUD operations for university departments.</li>
+  <li><strong>Courses (<code>/api/courses/</code>)</strong>: Management of academic programs/courses.</li>
+  <li><strong>Curriculum & Subjects</strong>: Managing subjects aligned to various courses.</li>
+</ul>
+
+<h3>2.3. User Management</h3>
+<ul>
+  <li><strong>Students (<code>/api/students/</code>)</strong>: Complete profile management, onboarding, and tracking of students. Format-specific username generation (PCMKPM + Year + ID).</li>
+  <li><strong>Faculty & HR (<code>/api/faculty/</code>)</strong>: Faculty profile management, allowing administrators to directly create faculty accounts.</li>
+</ul>
+
+<h3>2.4. Academic Activities</h3>
+<ul>
+  <li><strong>Timetable (<code>/api/timetable/</code>)</strong>: Complex scheduling endpoints allowing generation and retrieval of timetables for different classes/sections. Differentiated views for faculty (editable) and students (read-only).</li>
+  <li><strong>Attendance</strong>:
+    <ul>
+      <li><code>/api/attendance/</code>: Student attendance recording and metric retrieval.</li>
+      <li><code>/api/faculty-attendance/</code>: Faculty attendance tracking.</li>
+    </ul>
+  </li>
+  <li><strong>Examinations & Grading</strong>:
+    <ul>
+      <li><code>/api/exams/</code>: Examination scheduling, including integration with Google Forms for question papers, calendar alerts, and email notifications.</li>
+      <li><code>/api/exam-attempts/</code>: Faculty endpoints to enter and manage student marks line-by-line, triggering automatic CGPA recalculation.</li>
+    </ul>
+  </li>
+</ul>
+
+<h3>2.5. Administrative Features</h3>
+<ul>
+  <li><strong>Notices & Announcements (<code>/api/notices/</code>)</strong>: System-wide or targeted bulletin board.</li>
+  <li><strong>Fees Management (<code>/api/fees/</code>)</strong>: Tracking of student fee payments and dues.</li>
+  <li><strong>Activity Logs (<code>/api/activity-logs/</code>)</strong>: Audit trails for system security and administrative tracking.</li>
+</ul>
+
+<h3>2.6. Reporting & Analytics</h3>
+<ul>
+  <li><strong>Dashboard Stats (<code>/api/dashboard-stats/</code>)</strong>: Aggregated metrics for the home dashboard.</li>
+  <li><strong>Academic Analytics (<code>/api/academic-analytics/</code>)</strong>: Comprehensive data visualization endpoints for institutional performance.</li>
+</ul>
+
+<hr>
+
+<h2>3. Frontend Application (Angular)</h2>
+<p>The frontend is a responsive, modern web application providing tailored experiences for Students, Faculty, and Administrators. Features a localized UI (Indian Rupees contextualization) and dark mode capabilities.</p>
+
+<h3>3.1. General Interface</h3>
+<ul>
+  <li><strong>Layout & Navigation</strong>: Role-based sidebar and top navigation.</li>
+  <li><strong>Dashboard</strong>: Role-specific dashboards presenting relevant statistical cards and timely alerts.</li>
+</ul>
+
+<h3>3.2. Authentication Module</h3>
+<ul>
+  <li><strong>Login Component</strong>: Unified, branded login portal handling both Student and Faculty/Admin roles.</li>
+</ul>
+
+<h3>3.3. Academics Module</h3>
+<ul>
+  <li><strong>Academic Analytics</strong>: Data visualization charts monitoring attendance, performance, and enrollment.</li>
+  <li><strong>Students Directory</strong>: Interface to manage student records and histories.</li>
+  <li><strong>Curriculum Builder</strong>: Management of syllabus and course structures.</li>
+  <li><strong>Course Assignment</strong>: Allocating faculty to specific subjects and classes.</li>
+  <li><strong>Attendance Recording</strong>: Specialized grid layout allowing faculty to efficiently mark daily attendance.</li>
+  <li><strong>Timetable Configurator</strong>: Interactive graphical interface for timetable management with drag-and-drop or form-based "add class" features.</li>
+</ul>
+
+<h3>3.4. Examinations Module</h3>
+<ul>
+  <li><strong>Examination Management</strong>: Interface for HODs and examination branch to schedule exams.</li>
+  <li><strong>Marks Entry</strong>: Specialized views for faculty to securely input student grades post-examination.</li>
+</ul>
+
+<h3>3.5. Administration Module</h3>
+<ul>
+  <li><strong>Department Configuration</strong>: Settings to add/modify institutional departments.</li>
+  <li><strong>Registration Requests Approval</strong>: Admin portal to review pending student/staff sign-ups, generating predictable credentials (username formats, DOB-based passwords).</li>
+  <li><strong>Faculty Management (HR)</strong>: Interface moved under administration for comprehensive staff oversight.</li>
+  <li><strong>System Audit</strong>: Interface to review the activity logs and ensure system integrity.</li>
+</ul>
+
+<h3>3.6. Additional Integrated Modules</h3>
+<ul>
+  <li><strong>Notices</strong>: Publishing and viewing institutional announcements.</li>
+  <li><strong>Admissions</strong>: Pipeline management for prospective students.</li>
+</ul>
+
+<p><em>(Note: Certain auxillary modules like Finance, Library, Hostel, and Transport are currently designated as 'Under Development' placeholders.)</em></p>
+
+<hr>
+
+<h2>4. Summary of Recent Enhancements</h2>
+<p>The platform has undergone rigorous stabilization and feature enrichment, particularly in:</p>
+<ol>
+  <li><strong>Examination Lifecycle</strong>: Full end-to-end examination flows (Scheduling &rarr; Papers via GForms &rarr; Marks Entry &rarr; Auto CGPA calculation &rarr; Email/Calendar alerts).</li>
+  <li><strong>Attendance Accuracy</strong>: Refined specific logic ensuring flawless metric calculation.</li>
+  <li><strong>Automated Onboarding</strong>: Streamlined approval of registration requests with robust email delivery pipelines for credentials.</li>
+  <li><strong>UI Polishing</strong>: Dark mode optimization, currency localization, and fully responsive timetable rendering.</li>
+  <li><strong>Architectural Fixes</strong>: Resolution of critical Angular build dependencies (<code>@angular/cdk</code>) and Django routing logic.</li>
+</ol>
+
+<hr>
+<p><em>Generated automatically as a comprehensive snapshot of system capabilities.</em></p>
+
+</body>
+</html>

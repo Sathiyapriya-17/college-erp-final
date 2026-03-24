@@ -1,0 +1,22 @@
+.role-card {
+  border: 2px solid var(--surface-300);
+  border-radius: 12px;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.role-card:hover { border-color: var(--primary-color); background: var(--primary-50); }
+.role-card.selected { border-color: var(--primary-color); background: var(--primary-50); }
+.role-card i { color: var(--primary-color); }
+.field { margin-bottom: 1rem; }
+.field label { display: block; margin-bottom: 0.4rem; font-size: 0.9rem; }
+.info-box {
+  background: var(--blue-50);
+  border: 1px solid var(--blue-200);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  text-align: left;
+}

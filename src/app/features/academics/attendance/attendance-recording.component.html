@@ -1,0 +1,204 @@
+<p-toast></p-toast>
+
+<!-- ═══════════════ STUDENT VIEW (Read-Only) ═══════════════ -->
+<ng-container *ngIf="isStudent">
+  <div class="grid">
+    <!-- Header -->
+    <div class="col-12 flex align-items-center justify-content-between mb-2 flex-wrap gap-3">
+      <div>
+        <h1 class="text-3xl font-bold m-0">My Attendance</h1>
+        <p class="text-500 mt-1 mb-0">Your attendance record marked by faculty</p>
+      </div>
+      <div>
+        <p-dropdown [options]="courses" [(ngModel)]="studentCourse" placeholder="All Courses"
+          (onChange)="loadMyAttendance()" styleClass="p-inputtext-sm w-15rem" [showClear]="true"></p-dropdown>
+      </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="col-12 md:col-6 lg:col-3">
+      <div class="surface-card shadow-2 p-4 border-round">
+        <span class="block text-500 font-medium mb-2">Total Classes</span>
+        <div class="text-900 font-bold text-3xl">{{ getTotalDays() }}</div>
+      </div>
+    </div>
+    <div class="col-12 md:col-6 lg:col-3">
+      <div class="surface-card shadow-2 p-4 border-round border-left-3 border-green-500">
+        <span class="block text-500 font-medium mb-2">Present</span>
+        <div class="text-green-600 font-bold text-3xl">{{ getPresentDaysStudent() }}</div>
+      </div>
+    </div>
+    <div class="col-12 md:col-6 lg:col-3">
+      <div class="surface-card shadow-2 p-4 border-round border-left-3 border-red-500">
+        <span class="block text-500 font-medium mb-2">Absent</span>
+        <div class="text-red-600 font-bold text-3xl">{{ getAbsentDaysStudent() }}</div>
+      </div>
+    </div>
+    <div class="col-12 md:col-6 lg:col-3">
+      <div class="surface-card shadow-2 p-4 border-round"
+        [ngClass]="getAttendancePercentageStudent() >= 75 ? 'border-left-3 border-green-500' : 'border-left-3 border-orange-500'">
+        <span class="block text-500 font-medium mb-2">Attendance %</span>
+        <div class="font-bold text-3xl"
+          [ngClass]="getAttendancePercentageStudent() >= 75 ? 'text-green-600' : 'text-orange-600'">
+          {{ getAttendancePercentageStudent() }}%
+        </div>
+        <small class="text-500">{{ getAttendancePercentageStudent() >= 75 ? 'Good standing' : 'Below 75% threshold'
+          }}</small>
+      </div>
+    </div>
+
+    <!-- Attendance Records Table -->
+    <div class="col-12">
+      <div class="surface-card shadow-2 border-round p-4">
+        <h5 class="text-xl font-bold mt-0 mb-4">Attendance Records</h5>
+
+        <div *ngIf="loadingAttendance" class="flex justify-content-center align-items-center p-5">
+          <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+        </div>
+
+        <div *ngIf="!loadingAttendance && myAttendance.length === 0" class="text-center p-5">
+          <i class="pi pi-calendar-times text-5xl text-300 mb-3 block"></i>
+          <p class="text-500">No attendance records found. Your attendance will appear here once faculty marks it.</p>
+        </div>
+
+        <p-table *ngIf="!loadingAttendance && myAttendance.length > 0" [value]="myAttendance" [paginator]="true"
+          [rows]="10" responsiveLayout="scroll" styleClass="p-datatable-gridlines p-datatable-striped">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>Course</th>
+              <th>Status</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-record let-i="rowIndex">
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td>{{ record.date | date:'dd MMM yyyy' }}</td>
+              <td>{{ record.course_name || record.course || 'All/Multiple' }}</td>
+              <td>
+                <p-tag [value]="getStatusLabel(record.is_present)" [severity]="getStatusSeverity(record.is_present)">
+                </p-tag>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="4" class="text-center p-4 text-500">No records found.</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ═══════════════ FACULTY / ADMIN VIEW (Recording) ═══════════════ -->
+<ng-container *ngIf="!isStudent">
+  <div class="grid">
+    <div class="col-12 flex align-items-center justify-content-between">
+      <h1 class="text-3xl font-bold m-0">Daily Attendance Recording</h1>
+      <div class="flex gap-2 align-items-center">
+        <p-calendar [(ngModel)]="date" [showIcon]="true" placeholder="Select Date" (ngModelChange)="onFiltersChange()"
+          styleClass="p-inputtext-sm"></p-calendar>
+        <p-dropdown [options]="departments" [(ngModel)]="selectedDepartment" placeholder="Select Department"
+          (onChange)="onDepartmentChange()" styleClass="p-inputtext-sm w-15rem"></p-dropdown>
+        <p-dropdown *ngIf="!isAdmin" [options]="courses" [(ngModel)]="selectedCourse"
+          placeholder="Select Course (Optional)" (onChange)="onFiltersChange()" styleClass="p-inputtext-sm w-15rem"
+          [showClear]="true"></p-dropdown>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="col-12 md:col-6 lg:col-3">
+      <div class="surface-card shadow-2 p-3 border-round">
+        <span class="block text-500 font-medium mb-3">Total {{ isAdmin ? 'Members' : 'Students' }}</span>
+        <div class="text-900 font-medium text-xl">{{students.length}}</div>
+      </div>
+    </div>
+    <div class="col-12 md:col-6 lg:col-3">
+      <div class="surface-card shadow-2 p-3 border-round border-left-3 border-green-500">
+        <span class="block text-500 font-medium mb-3">Present</span>
+        <div class="text-900 font-medium text-xl">{{ getPresentCount() }}</div>
+      </div>
+    </div>
+    <div class="col-12 md:col-6 lg:col-3">
+      <div class="surface-card shadow-2 p-3 border-round border-left-3 border-red-500">
+        <span class="block text-500 font-medium mb-3">Absent</span>
+        <div class="text-900 font-medium text-xl">{{ getAbsentCount() }}</div>
+      </div>
+    </div>
+    <div class="col-12 md:col-6 lg:col-3">
+      <div class="surface-card shadow-2 p-3 border-round">
+        <span class="block text-500 font-medium mb-3">Attendance Rate</span>
+        <div class="text-900 font-medium text-xl">{{ getAttendancePercentage() }}%</div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="surface-card shadow-2 border-round p-4">
+        <div class="flex justify-content-between align-items-center mb-4">
+          <h5 class="text-xl font-bold m-0">{{ isAdmin ? 'Faculty' : 'Student' }} List</h5>
+          <div class="flex gap-2">
+            <button pButton label="Mark All Present" class="p-button-success p-button-outlined p-button-sm"
+              (click)="markAll('Present')"></button>
+            <button pButton label="Mark All Absent" class="p-button-danger p-button-outlined p-button-sm"
+              (click)="markAll('Absent')"></button>
+          </div>
+        </div>
+
+        <p-table [value]="students" responsiveLayout="scroll" styleClass="p-datatable-gridlines">
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width: 50px">#</th>
+              <th>{{ isAdmin ? 'ID' : 'Roll No' }}</th>
+              <th>{{ isAdmin ? 'Name' : 'Student Name' }}</th>
+              <th>Status</th>
+              <th>Remarks</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-student let-rowIndex="rowIndex">
+            <tr>
+              <td>{{rowIndex + 1}}</td>
+              <td class="font-bold">{{student.rollNo}}</td>
+              <td>
+                <div class="flex align-items-center gap-2">
+                  <p-avatar [label]="student.name.charAt(0)" shape="circle" size="normal"
+                    styleClass="bg-primary text-white"></p-avatar>
+                  <span>{{student.name}}</span>
+                </div>
+              </td>
+              <td>
+                <div class="flex gap-2">
+                  <div class="field-checkbox m-0">
+                    <p-radioButton name="status{{student.id}}" value="Present" [(ngModel)]="student.status"
+                      inputId="present{{student.id}}"></p-radioButton>
+                    <label for="present{{student.id}}" class="text-green-600 font-medium ml-2 cursor-pointer">P</label>
+                  </div>
+                  <div class="field-checkbox m-0 ml-3">
+                    <p-radioButton name="status{{student.id}}" value="Absent" [(ngModel)]="student.status"
+                      inputId="absent{{student.id}}"></p-radioButton>
+                    <label for="absent{{student.id}}" class="text-red-600 font-medium ml-2 cursor-pointer">A</label>
+                  </div>
+                  <div class="field-checkbox m-0 ml-3">
+                    <p-radioButton name="status{{student.id}}" value="Late" [(ngModel)]="student.status"
+                      inputId="late{{student.id}}"></p-radioButton>
+                    <label for="late{{student.id}}" class="text-orange-600 font-medium ml-2 cursor-pointer">L</label>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <input pInputText type="text" [(ngModel)]="student.remarks" placeholder="Optional"
+                  class="p-inputtext-sm w-full" />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+
+        <div class="flex justify-content-end mt-4">
+          <button pButton label="Save Attendance" icon="pi pi-check" (click)="saveAttendance()"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

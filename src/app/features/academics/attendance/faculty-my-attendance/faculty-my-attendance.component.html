@@ -1,0 +1,83 @@
+<div class="grid">
+  <!-- Header -->
+  <div class="col-12 flex align-items-center justify-content-between mb-2 flex-wrap gap-3">
+    <div>
+      <h1 class="text-3xl font-bold m-0">My Attendance</h1>
+      <p class="text-500 mt-1 mb-0">Your attendance record at the college.</p>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="col-12 md:col-6 lg:col-3">
+    <div class="surface-card shadow-2 p-4 border-round">
+      <span class="block text-500 font-medium mb-2">Total Recorded Days</span>
+      <div class="text-900 font-bold text-3xl">{{ getTotalDays() }}</div>
+    </div>
+  </div>
+  <div class="col-12 md:col-6 lg:col-3">
+    <div class="surface-card shadow-2 p-4 border-round border-left-3 border-green-500">
+      <span class="block text-500 font-medium mb-2">Present</span>
+      <div class="text-green-600 font-bold text-3xl">{{ getPresentDays() }}</div>
+    </div>
+  </div>
+  <div class="col-12 md:col-6 lg:col-3">
+    <div class="surface-card shadow-2 p-4 border-round border-left-3 border-red-500">
+      <span class="block text-500 font-medium mb-2">Absent</span>
+      <div class="text-red-600 font-bold text-3xl">{{ getAbsentDays() }}</div>
+    </div>
+  </div>
+  <div class="col-12 md:col-6 lg:col-3">
+    <div class="surface-card shadow-2 p-4 border-round"
+      [ngClass]="getAttendancePercentage() >= 75 ? 'border-left-3 border-green-500' : 'border-left-3 border-orange-500'">
+      <span class="block text-500 font-medium mb-2">Attendance %</span>
+      <div class="font-bold text-3xl"
+        [ngClass]="getAttendancePercentage() >= 75 ? 'text-green-600' : 'text-orange-600'">
+        {{ getAttendancePercentage() }}%
+      </div>
+    </div>
+  </div>
+
+  <!-- Attendance Records Table -->
+  <div class="col-12">
+    <div class="surface-card shadow-2 border-round p-4">
+      <h5 class="text-xl font-bold mt-0 mb-4">Attendance Records</h5>
+
+      <div *ngIf="loadingAttendance" class="flex justify-content-center align-items-center p-5">
+        <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+      </div>
+
+      <div *ngIf="!loadingAttendance && myAttendance.length === 0" class="text-center p-5">
+        <i class="pi pi-calendar-times text-5xl text-300 mb-3 block"></i>
+        <p class="text-500">No attendance records found.</p>
+      </div>
+
+      <p-table *ngIf="!loadingAttendance && myAttendance.length > 0" [value]="myAttendance" [paginator]="true"
+        [rows]="10" responsiveLayout="scroll" styleClass="p-datatable-gridlines p-datatable-striped">
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 50px">#</th>
+            <th>Date</th>
+            <th>Remarks</th>
+            <th style="width: 150px">Status</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-record let-i="rowIndex">
+          <tr>
+            <td>{{ i + 1 }}</td>
+            <td class="font-bold">{{ record.date | date:'dd MMM yyyy' }}</td>
+            <td>{{ record.remarks || '-' }}</td>
+            <td>
+              <p-tag [value]="getStatusLabel(record.is_present)" [severity]="getStatusSeverity(record.is_present)">
+              </p-tag>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="4" class="text-center p-4 text-500">No records found.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>

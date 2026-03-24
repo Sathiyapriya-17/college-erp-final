@@ -1,0 +1,44 @@
+How to Run the Project
+Start Backend: cd backend -> .\venv\Scripts\activate -> python manage.py runserver
+Start Frontend: npm start (in the root directory)
+
+
+Local Verification Steps
+Since the environment has specific Python pathing, please follow these steps to start your backend:
+
+Activate Environment & Install Deps:
+
+powershell
+cd backend
+python -m venv venv
+.\venv\Scripts\activate
+pip install -r requirements.txt
+Run Migrations:
+
+powershell
+python manage.py makemigrations api
+python manage.py migrate
+How to Run the Project
+
+
+Start Backend: cd backend -> .\venv\Scripts\activate -> python manage.py runserver
+Start Frontend: ng s (in the root directory)
+
+Verification Results
+Student Data
+The following students were seeded:
+
+Sathiyapriya (STU2024001)
+Logeshwari (STU2024002) ... and 10 others.
+Login Credentials
+Username: STU2024001, STU2024002, etc.
+Password: Password123
+
+
+{username: "STU2024001", password: "Password123"}
+password
+: 
+"Password123"
+username
+: 
+"STU2024001"

@@ -1,0 +1,146 @@
+<p-dialog [(visible)]="visible" [modal]="true" [closable]="true" [style]="{width: '560px'}" [draggable]="false"
+    styleClass="contact-admin-dialog" (onHide)="onClose()">
+
+    <ng-template pTemplate="header">
+        <div class="flex align-items-center gap-2">
+            <i class="pi pi-user-plus text-primary" style="font-size: 1.2rem"></i>
+            <span class="font-semibold text-xl">Request Account Access</span>
+        </div>
+    </ng-template>
+
+    <!-- STEP 1: Choose Role -->
+    <div *ngIf="step === 1" class="role-pick">
+        <p class="text-color-secondary mb-4">Choose your role to fill in the appropriate registration form:</p>
+        <div class="flex gap-3">
+            <div class="role-card flex-1" [class.selected]="selectedRole === 'STUDENT'" (click)="selectRole('STUDENT')">
+                <i class="pi pi-graduation-cap mb-2" style="font-size: 2.5rem"></i>
+                <div class="font-bold">Student</div>
+                <div class="text-sm text-color-secondary mt-1">Request student portal access</div>
+            </div>
+            <div class="role-card flex-1" [class.selected]="selectedRole === 'FACULTY'" (click)="selectRole('FACULTY')">
+                <i class="pi pi-briefcase mb-2" style="font-size: 2.5rem"></i>
+                <div class="font-bold">Faculty</div>
+                <div class="text-sm text-color-secondary mt-1">Request faculty portal access</div>
+            </div>
+        </div>
+        <button pButton label="Continue" icon="pi pi-arrow-right" iconPos="right" class="w-full mt-4"
+            [disabled]="!selectedRole" (click)="step = 2"></button>
+    </div>
+
+    <!-- STEP 2: Student Form -->
+    <div *ngIf="step === 2 && selectedRole === 'STUDENT'">
+        <div class="flex align-items-center gap-2 mb-4">
+            <button pButton icon="pi pi-arrow-left" class="p-button-text p-button-sm" (click)="step = 1"></button>
+            <span class="font-medium text-lg">Student Registration Details</span>
+        </div>
+        <div class="grid formgrid">
+            <div class="field col-12 md:col-6">
+                <label class="font-medium">Full Name *</label>
+                <input pInputText [(ngModel)]="form.full_name" class="w-full" placeholder="e.g. Rahul Sharma" />
+            </div>
+            <div class="field col-12 md:col-6">
+                <label class="font-medium">Email Address</label>
+                <input pInputText type="email" [(ngModel)]="form.email" class="w-full"
+                    placeholder="your@email.com (Optional)" />
+            </div>
+            <div class="field col-12 md:col-6">
+                <label class="font-medium">Phone Number</label>
+                <input pInputText [(ngModel)]="form.phone" class="w-full" placeholder="+91 9876543210" />
+            </div>
+            <div class="field col-12 md:col-6">
+                <label class="font-medium">Department *</label>
+                <p-dropdown [options]="departments" [(ngModel)]="form.department" optionLabel="name" optionValue="id"
+                    placeholder="Select Department" styleClass="w-full"></p-dropdown>
+            </div>
+            <div class="field col-12 md:col-6">
+                <label class="font-medium">Semester *</label>
+                <p-inputNumber [(ngModel)]="form.semester" [min]="1" [max]="8" styleClass="w-full"
+                    placeholder="1-8"></p-inputNumber>
+            </div>
+            <div class="field col-12 md:col-6">
+                <label class="font-medium">Date of Birth</label>
+                <p-calendar appendTo="body" [(ngModel)]="form.date_of_birth" dateFormat="yy-mm-dd" styleClass="w-full"
+                    [showIcon]="true" placeholder="YYYY-MM-DD"></p-calendar>
+            </div>
+            <div class="field col-12">
+                <label class="font-medium">Address</label>
+                <textarea pInputTextarea [(ngModel)]="form.address" class="w-full" rows="2"
+                    placeholder="Residential address"></textarea>
+            </div>
+        </div>
+        <small *ngIf="formError" class="p-error block mb-2">{{ formError }}</small>
+        <button pButton label="Submit Request" icon="pi pi-send" class="w-full" [loading]="loading"
+            (click)="submit()"></button>
+    </div>
+
+    <!-- STEP 2: Faculty Form -->
+    <div *ngIf="step === 2 && selectedRole === 'FACULTY'">
+        <div class="flex align-items-center gap-2 mb-4">
+            <button pButton icon="pi pi-arrow-left" class="p-button-text p-button-sm" (click)="step = 1"></button>
+            <span class="font-medium text-lg">Faculty Registration Details</span>
+        </div>
+        <div class="grid formgrid">
+            <div class="field col-12 md:col-6">
+                <label class="font-medium">Full Name *</label>
+                <input pInputText [(ngModel)]="form.full_name" class="w-full" placeholder="e.g. Dr. Priya Nair" />
+            </div>
+            <div class="field col-12 md:col-6">
+                <label class="font-medium">Email Address</label>
+                <input pInputText type="email" [(ngModel)]="form.email" class="w-full"
+                    placeholder="your@email.com (Optional)" />
+            </div>
+            <div class="field col-12 md:col-6">
+                <label class="font-medium">Phone Number</label>
+                <input pInputText [(ngModel)]="form.phone" class="w-full" placeholder="+91 9876543210" />
+            </div>
+            <div class="field col-12 md:col-6">
+                <label class="font-medium">Department *</label>
+                <p-dropdown [options]="departments" [(ngModel)]="form.department" optionLabel="name" optionValue="id"
+                    placeholder="Select Department" styleClass="w-full"></p-dropdown>
+            </div>
+            <div class="field col-12 md:col-6">
+                <label class="font-medium">Designation *</label>
+                <input pInputText [(ngModel)]="form.designation" class="w-full"
+                    placeholder="e.g. Assistant Professor" />
+            </div>
+            <div class="field col-12 md:col-6">
+                <label class="font-medium">Qualification</label>
+                <input pInputText [(ngModel)]="form.qualification" class="w-full" placeholder="e.g. M.Tech, PhD" />
+            </div>
+            <div class="field col-12">
+                <label class="font-medium">Years of Experience</label>
+                <p-inputNumber [(ngModel)]="form.experience_years" [min]="0" [max]="50" styleClass="w-full"
+                    placeholder="0"></p-inputNumber>
+            </div>
+        </div>
+        <small *ngIf="formError" class="p-error block mb-2">{{ formError }}</small>
+        <button pButton label="Submit Request" icon="pi pi-send" class="w-full" [loading]="loading"
+            (click)="submit()"></button>
+    </div>
+
+    <!-- STEP 3: Success -->
+    <div *ngIf="step === 3" class="text-center py-4">
+        <i class="pi pi-check-circle text-green-500 mb-3" style="font-size: 4rem"></i>
+        <h3 class="text-900 font-bold mt-0 mb-2">Request Submitted!</h3>
+        <p class="text-color-secondary mb-1">Your <strong>{{ selectedRole === 'STUDENT' ? 'Student' : 'Faculty'
+                }}</strong> registration
+            request has been submitted to the admin.</p>
+        <p class="text-color-secondary mb-4" *ngIf="form.email">
+            You will receive an email at <strong>{{ form.email }}</strong> once the admin
+            reviews your request.
+        </p>
+        <p class="text-color-secondary mb-4" *ngIf="!form.email">
+            Please check with the college administration or check back later to get your account details once reviewed.
+        </p>
+        <div class="info-box mb-4">
+            <i class="pi pi-info-circle mr-2 text-blue-500"></i>
+            <span class="text-sm text-color-secondary" *ngIf="form.email">
+                If approved, your login credentials will be sent to your email. If rejected, you will receive a reason.
+            </span>
+            <span class="text-sm text-color-secondary" *ngIf="!form.email">
+                If approved, your login credentials will be available with the administration.
+            </span>
+        </div>
+        <button pButton label="Close" icon="pi pi-times" class="p-button-outlined" (click)="closeAndReset()"></button>
+    </div>
+</p-dialog>

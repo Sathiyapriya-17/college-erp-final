@@ -1,0 +1,91 @@
+<div class="grid">
+  <div class="col-12 flex align-items-center justify-content-between">
+    <h1 class="text-3xl font-bold m-0">Curriculum Management</h1>
+    <div class="flex gap-2">
+      <p-dropdown [options]="departments" [(ngModel)]="selectedDept" placeholder="Select Department"
+        class="p-inputtext-sm" optionLabel="name" optionValue="id"></p-dropdown>
+      <p-button *ngIf="userRole !== 'Student'" label="Add Course" icon="pi pi-plus" (onClick)="showDialog()"></p-button>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="surface-card shadow-2 border-round p-4">
+      <p-table [value]="curriculum" dataKey="semester" rowGroupMode="subheader" groupRowsBy="semester"
+        sortField="semester" sortMode="single" responsiveLayout="scroll">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Course Code</th>
+            <th>Course Title</th>
+            <th>Type</th>
+            <th>Credits</th>
+            <th>Total Marks</th>
+            <th *ngIf="userRole !== 'Student'">Action</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="groupheader" let-curr>
+          <tr pRowGroupHeader>
+            <td [attr.colspan]="userRole !== 'Student' ? 6 : 5">
+              <span class="font-bold ml-2">Semester {{curr.semester}}</span>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-course>
+          <tr>
+            <td class="font-medium">{{course.code}}</td>
+            <td>{{course.name}}</td>
+            <td><p-tag [value]="course.type || 'Core'" [severity]="getTypeSeverity(course.type || 'Core')"></p-tag></td>
+            <td>{{course.credits}}</td>
+            <td>{{course.marks || 100}}</td>
+            <td *ngIf="userRole !== 'Student'">
+              <button pButton icon="pi pi-pencil" class="p-button-text p-button-warning p-button-sm"
+                (click)="editCourse(course)"></button>
+              <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm"
+                (click)="deleteCourse(course)"></button>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="summary">
+          <div class="flex align-items-center justify-content-between">
+            In total there are {{curriculum ? curriculum.length : 0 }} courses.
+          </div>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+
+<p-dialog header="Add New Course" [(visible)]="displayDialog" [modal]="true" [style]="{width: '450px'}"
+  [draggable]="false" [resizable]="false">
+  <div class="flex flex-column gap-3 pt-3">
+    <div class="flex flex-column gap-2">
+      <label htmlFor="code" class="font-bold">Course Code</label>
+      <input pInputText id="code" [(ngModel)]="newCourse.code" placeholder="e.g. CS101" />
+    </div>
+    <div class="flex flex-column gap-2">
+      <label htmlFor="title" class="font-bold">Course Title</label>
+      <input pInputText id="title" [(ngModel)]="newCourse.name" placeholder="e.g. Intro to Programming" />
+    </div>
+    <div class="flex flex-column gap-2">
+      <label htmlFor="department" class="font-bold">Department</label>
+      <p-dropdown [options]="departments" [(ngModel)]="newCourse.department" placeholder="Select Department"
+        optionLabel="name" optionValue="id"></p-dropdown>
+    </div>
+    <div class="flex flex-column gap-2">
+      <label htmlFor="type" class="font-bold">Type</label>
+      <p-dropdown [options]="types" [(ngModel)]="newCourse.type" placeholder="Select Type"></p-dropdown>
+    </div>
+    <div class="flex flex-column gap-2">
+      <label htmlFor="credits" class="font-bold">Credits</label>
+      <input type="number" pInputText id="credits" [(ngModel)]="newCourse.credits" placeholder="e.g. 3" />
+    </div>
+    <div class="flex flex-column gap-2">
+      <label htmlFor="semester" class="font-bold">Semester</label>
+      <p-dropdown [options]="semesters" [(ngModel)]="newCourse.semester" placeholder="Select Semester"></p-dropdown>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancel" icon="pi pi-times" (onClick)="displayDialog = false" styleClass="p-button-text"></p-button>
+    <p-button label="Save" icon="pi pi-check" (onClick)="saveCourse()" autofocus></p-button>
+  </ng-template>
+</p-dialog>
+<p-toast></p-toast>

@@ -1,0 +1,109 @@
+<div class="grid">
+  <div class="col-12 flex align-items-center justify-content-between">
+    <h1 class="text-3xl font-bold m-0">Faculty Allocation</h1>
+    <div class="flex gap-2">
+      <p-dropdown [options]="departments" [(ngModel)]="selectedDept" (onChange)="onFilterChange()"
+        placeholder="Select Department" class="p-inputtext-sm" appendTo="body" styleClass="w-full"></p-dropdown>
+      <p-dropdown [options]="semesters" [(ngModel)]="selectedSem" (onChange)="onFilterChange()"
+        placeholder="Select Semester" class="p-inputtext-sm" appendTo="body" styleClass="w-full"></p-dropdown>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="surface-card shadow-2 border-round p-4">
+      <h5 class="text-xl font-bold mb-4">Faculty Allocation</h5>
+      <p-table [value]="assignments" responsiveLayout="scroll">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Course Code</th>
+            <th>Course Title</th>
+            <th>Type</th>
+            <th>Allocated Faculty</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-course>
+          <tr>
+            <td class="font-medium">{{course.code}}</td>
+            <td>{{course.title}}</td>
+            <td><p-tag [value]="course.type" severity="info"></p-tag></td>
+            <td>
+              <div class="flex align-items-center gap-2" *ngIf="course.allocated_faculty_name; else noFaculty">
+                <p-avatar [label]="course.allocated_faculty_name.charAt(0)" shape="circle" size="normal"
+                  styleClass="bg-blue-500 text-white"></p-avatar>
+                <span>{{course.allocated_faculty_name}}</span>
+              </div>
+              <ng-template #noFaculty>
+                <span class="text-500 font-italic">Unassigned</span>
+              </ng-template>
+            </td>
+            <td>
+              <i class="pi"
+                [ngClass]="{'pi-check-circle text-green-500': course.allocated_faculty, 'pi-exclamation-circle text-orange-500': !course.allocated_faculty}"></i>
+              <span class="ml-2">{{course.allocated_faculty ? 'Assigned' : 'Pending'}}</span>
+            </td>
+            <td>
+              <button pButton icon="pi pi-user-edit" class="p-button-text p-button-sm"
+                (click)="editAssignment(course)"></button>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+
+<p-dialog header="Assign Faculty" [(visible)]="displayDialog" [modal]="true" [style]="{width: '400px'}"
+  [draggable]="false" [resizable]="false">
+  <div class="flex flex-column gap-3 pt-3" *ngIf="selectedCourse">
+    <div class="font-bold text-lg mb-2">{{selectedCourse.code}} - {{selectedCourse.title}}</div>
+
+    <div class="flex flex-column gap-2">
+      <label htmlFor="faculty" class="font-bold">Select Faculty</label>
+      <p-dropdown [options]="facultyList" [(ngModel)]="selectedFaculty" placeholder="Choose Faculty"
+        [filter]="true" appendTo="body" styleClass="w-full"></p-dropdown>
+    </div>
+
+    <div class="surface-100 p-3 border-round mt-2">
+      <div class="text-xs text-500 mb-1">CURRENT WORKLOAD</div>
+      <div class="font-bold">{{ getFacultyWorkload(selectedFaculty) }} hours/week</div>
+      <p-progressBar [value]="(getFacultyWorkload(selectedFaculty)/20)*100" [showValue]="false"
+        styleClass="h-1rem mt-2"></p-progressBar>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancel" icon="pi pi-times" (onClick)="displayDialog = false" styleClass="p-button-text"></p-button>
+    <p-button label="Assign" icon="pi pi-check" (onClick)="saveAssignment()" autofocus></p-button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog header="Add New Course" [(visible)]="displayCourseDialog" [modal]="true" [style]="{width: '450px'}"
+  [draggable]="false" [resizable]="false">
+  <div class="flex flex-column gap-3 pt-3">
+    <div class="field">
+      <label for="cname" class="font-bold">Course Title</label>
+      <input type="text" id="cname" pInputText [(ngModel)]="newCourse.name" class="w-full" />
+    </div>
+    <div class="field">
+      <label for="ccode" class="font-bold">Course Code</label>
+      <input type="text" id="ccode" pInputText [(ngModel)]="newCourse.code" class="w-full" />
+    </div>
+    <div class="field">
+      <label class="font-bold block mb-2">Type</label>
+      <p-dropdown [options]="[{label: 'Core', value: 'Core'}, {label: 'Elective', value: 'Elective'}]"
+        [(ngModel)]="newCourse.type" class="w-full" appendTo="body" styleClass="w-full"></p-dropdown>
+    </div>
+    <div class="field mt-2">
+      <label for="ccredits" class="font-bold">Credits</label>
+      <input type="number" id="ccredits" pInputText [(ngModel)]="newCourse.credits" class="w-full" />
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancel" icon="pi pi-times" (onClick)="displayCourseDialog = false"
+      styleClass="p-button-text"></p-button>
+    <p-button label="Save Course" icon="pi pi-check" (onClick)="saveNewCourse()"></p-button>
+  </ng-template>
+</p-dialog>
+
+<p-toast></p-toast>
